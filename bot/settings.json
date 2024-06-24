@@ -1,0 +1,17 @@
+{
+    "trade_risk": 1,
+    "timezone": "Etc/GMT-2",
+    "trailing_stop": true,
+    "sleep_time": 10,
+    "trading_start_time": 0,
+    "trading_end_time": 0,
+    "tradable_pairs": {
+        "XAUUSD": {
+            "timeframes": [
+                "M5"
+            ],
+            "settings": {
+            }
+        }
+    }
+}

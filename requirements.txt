@@ -1,0 +1,17 @@
+certifi==2024.6.2
+charset-normalizer==3.3.2
+colorama==0.4.6
+dnspython==2.6.1
+idna==3.7
+MetaTrader5==5.0.4288
+numpy==1.26.4
+pandas==2.2.2
+pandas_ta==0.3.14b0
+pymongo==4.7.3
+python-dateutil==2.9.0.post0
+pytz==2024.1
+requests==2.32.3
+six==1.16.0
+tqdm==4.66.4
+tzdata==2024.1
+urllib3==2.2.1
