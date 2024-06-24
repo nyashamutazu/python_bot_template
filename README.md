@@ -18,30 +18,24 @@ This respository contains python files for a free MetaTrader5(MT5) trading bot. 
 
 ## Download MetaTrader5
 1. [MetaTrater 5](https://www.metatrader5.com/en/download)
-2. Update ./constants/defs.py file with metatrader path
+2. Update `./constants/defs.py` file with metatrader path
 
 ## Create a venv 
 1. Create a virtual environment 
-'''bash
-venv\Scripts\activate.bat  
-'''
+`venv\Scripts\activate.bat`
 2. Pull files from requirements 
-'''bash
-pip install -r requirements.txt
-'''
+`pip install -r requirements.txt`
 3. Optionally install TA-Lib for pandas_ta
-'''bash
-pip install TA-Lib
-'''
+`pip install TA-Lib`
 4. If attempted installing TA-Lib but failed download [Anaconda](https://www.anaconda.com/)
 
 ## Update bot credetials
 1. Connect your broker, for example, [vantage](https://secure.vantagemarkets.com/login) and create an account 
-2. Update ./constants/credentials.py file 
+2. Update `./constants/credentials.py` file 
 
 ## Update bot settings
-1. Bot settings can be updated in ./bot/settings.json 
+1. Bot settings can be updated in `./bot/settings.json`
 
 ## Deploy strategy
-1. Follow instructions ./strategy/README.md to deploy strategy
-2. You want to deploy your strategy into ./strategy/strategy.py
+1. Follow instructions `./strategy/README.md` to deploy strategy
+2. You want to deploy your strategy into `./strategy/strategy.py`
