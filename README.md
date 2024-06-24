@@ -22,7 +22,7 @@ This respository contains python files for a free MetaTrader5(MT5) trading bot. 
 
 ## Create a venv 
 1. Create a virtual environment 
-`venv\Scripts\activate.bat`
+`python -m venv /path/to/new/virtual/environment`
 2. Pull files from requirements 
 `pip install -r requirements.txt`
 3. Optionally install TA-Lib for pandas_ta
