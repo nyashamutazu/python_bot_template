@@ -1,0 +1,46 @@
+{
+  "bot_name": "Bot_01",
+  "strategy_name": "Template",
+  "active_status": true,
+  "timezone": "Etc/GMT-2",
+  "sleep_time": 10,
+  "start_time": "9:00",
+  "end_time": "21:00",
+  "risk_management": {
+    "max_trade_percentage": 0.01,
+    "max_stop_loss_percentage": 0.01,
+    "take_profit_ratio": 0.05,
+    "max_concurrent_trades": 3,
+    "max_daily_loss_percentage": 0.03
+  },
+  "error_handling": {
+    "on_error": "retry",
+    "max_retries": 3,
+    "logging_name": "error"
+  },
+  "logging": {
+    "error": {
+      "name": "error",
+      "log_file_path": "/log"
+    },
+    "main": {
+      "name": "main",
+      "log_file_path": "/log"
+    }
+  },
+  "signal_management": {
+    "trade_processor": false
+  },
+  "trade_management": {
+    "trailing_stop": false,
+    "partial_close": false
+  },
+  "tradable_symbols": {
+    "XAUUSD": [{
+      "granularity": "M1",
+      "indicators": {},
+      "risk": 0.01,
+      "profit_ratio": 1
+    }]
+  }
+}
