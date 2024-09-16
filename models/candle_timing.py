@@ -1,15 +1,11 @@
+from dataclasses import dataclass, field
 import datetime as dt
-import pytz
-import constants.defs as defs
 
+@dataclass
 class CandleTiming:
-    def __init__(self, last_time, trade_settings):
-        self.last_time = last_time
-        self.trade_settings = trade_settings
-        self.last_position_update = last_time
-        self.is_ready = False
+    last_time: dt.datetime
+    tries: int = 0
+    is_ready: bool = False
 
     def __repr__(self):
-        current_timezone = pytz.timezone(self.trade_settings['timezone'])
-
-        return f"last_candle:{dt.datetime.fromtimestamp(self.last_time, current_timezone)} is_ready:{self.is_ready}"
+        return f'last_candle: {dt.datetime.strftime(self.last_time, "%Y-%m-%d %H:%M")}, is_ready: {self.is_ready}'

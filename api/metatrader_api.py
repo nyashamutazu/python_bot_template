@@ -199,7 +199,6 @@ class MT5:
     def fetch_candles(
         self,
         symbol,
-        log_message,
         log_to_error,
         count=100,
         mt5_timeframe="M30",
@@ -212,7 +211,7 @@ class MT5:
             return hist_data_df
         except Exception as error:
             log_to_error(
-                f"Error: mt5.fetch_candles: Failed to fetch candles for {symbol}"
+                f"Error: mt5.fetch_candles: Failed to fetch candles for {symbol}", 
             )
             log_to_error(error)
 

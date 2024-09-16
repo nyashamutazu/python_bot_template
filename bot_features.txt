@@ -1,0 +1,45 @@
+
+Features of the trading bot:
+
+1. **Threading**:
+   - Runs the main bot logic (`run_bot`) and the signal processing logic (`run_signal_executor` or `run_signal_processor`) in separate threads for parallel execution.
+
+2. **Error Handling**:
+   - Catches specific exceptions like `ConnectionError` and `ValueError` during order placement.
+   - Logs errors and unexpected behavior with detailed error messages.
+
+3. **Signal Management**:
+   - Uses the `SignalManager` to process signals based on a strategy, validate them, and queue them for execution.
+   - Signals are placed in a thread-safe queue (`current_signals`) to avoid race conditions.
+
+4. **Trade Management**:
+   - Uses `TradeManager` to manage trades, including closing open trades when the bot is stopped.
+   - Handles trade placement through the MetaTrader 5 (`MT5`) API and logs success or failure of each trade.
+   - Can optionally manage trades with `run_signal_processor`.
+
+5. **Risk Management**:
+   - Each strategy has integrated risk management, including stop-loss, take-profit, and position sizing based on defined risk parameters.
+
+6. **Dynamic Strategy Loading**:
+   - Loads strategies dynamically from a configuration file (`configuration.json`), allowing flexibility to trade multiple symbols and strategies.
+   - Each symbol has its own strategies with customizable settings like granularity, indicators, risk, and profit ratio.
+
+7. **Logging**:
+   - Logs important events (starting the bot, placing trades, errors) to separate logs (`main` and `error` logs).
+   - Uses a `LogWrapper` class to handle logging for different components.
+
+8. **Signal Execution**:
+   - Periodically generates and executes trading signals based on the strategies and symbols defined in the configuration.
+   - Places trades in the MetaTrader 5 platform after validating the signals and ensuring they meet risk management criteria.
+
+9. **Candle Management**:
+   - Uses `CandleManager` to fetch and process candle data for the configured symbols and granularity.
+   - Candle data is used to trigger signals based on the strategies applied.
+
+10. **Graceful Shutdown**:
+   - Ensures that when the bot is stopped, all threads are joined properly, and any open trades are closed or managed appropriately.
+   - Logs the bot’s stopping process and ensures all operations have been stopped.
+
+11. **Bot Configuration**:
+   - Loads and configures bot settings (like trading times, symbols, risk parameters) from a configuration file.
+   - Uses the `BotConfig` class to manage the overall bot configuration.
