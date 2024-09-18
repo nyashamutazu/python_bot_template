@@ -4,7 +4,7 @@ from bot.strategy_manager import StrategyManager
 from models.candle_timing import CandleTiming
 import constants.defs as defs
 from models.individual_strategy import IndividualStrategy
-
+import datetime as dt
 
 class CandleManager:
     def __init__(self, mt5: MT5, trading_symbols: Dict[str, List[StrategyManager]], log_message):
@@ -24,11 +24,13 @@ class CandleManager:
                 granularity = strategy.granularity
                 
                 name = f'{symbol}_{granularity}'
-                current_candle = self.mt5.query_historic_data(symbol, 1)
-                last_time = current_candle[0][0]
+                current_candle = self.mt5.query_historic_data(symbol, 1, granularity=granularity)
+                timestamp = current_candle[0][0]
             
+                datetime = dt.datetime.fromtimestamp(timestamp)
+                
                 self.timings[name] = CandleTiming(
-                    last_time=last_time)
+                    last_time=datetime)
 
                 timing_var = (symbol, granularity)
                 self.symbols_list.append(timing_var)
@@ -42,9 +44,10 @@ class CandleManager:
         triggered: List[str] = []
 
         for symbol, granularity in self.symbols_list:
-            current_candle = self.mt5.query_historic_data(symbol, 1)
-            current_time = current_candle[0][0] if current_candle else None
-
+            current_candle = self.mt5.query_historic_data(symbol, 1, granularity=granularity)
+            timestamp = current_candle[0][0] if current_candle else None
+            current_time = dt.datetime.fromtimestamp(timestamp)
+                                
             if current_time is None:
                 self.log_message(f"Unable to get candle for {symbol}. Retrying...", symbol)
                 self.timings[f'{symbol}_{granularity}'].tries += 1

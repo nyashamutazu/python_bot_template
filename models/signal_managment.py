@@ -1,5 +1,5 @@
 from dataclasses import dataclass
 
 @dataclass
-class SiganlManagement:
+class SignalManagement:
     trade_processor: bool

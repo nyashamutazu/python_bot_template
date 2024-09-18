@@ -36,11 +36,13 @@
     "partial_close": false
   },
   "tradable_symbols": {
-    "XAUUSD": [{
-      "granularity": "M1",
-      "indicators": {},
-      "risk": 0.01,
-      "profit_ratio": 1
-    }]
+    "XAUUSD": [
+      {
+        "granularity": "M1",
+        "indicators": {},
+        "risk": 0.01,
+        "profit_ratio": 1
+      }
+    ]
   }
 }

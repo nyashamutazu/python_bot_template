@@ -6,6 +6,7 @@ from typing import Literal, Optional
 @dataclass
 class SignalDecision:
     symbol: str
+    signal: int
     order_type: Literal["SELL_STOP", "BUY_STOP"]
     current_price: float
     volume: float

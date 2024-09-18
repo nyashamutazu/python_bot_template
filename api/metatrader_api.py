@@ -1,43 +1,58 @@
 import pandas as pd
 import MetaTrader5 as mt5
 import pytz
+import logging
+import time
 
 import datetime as dt
-import constants.credentials as credentials
 
+import constants.credentials as credentials
 import constants.defs as defs
 
-
 class MT5:
+    MAX_LOGIN_ATTEMPTS = 3  # Define the max number of login attempts
+    RETRY_DELAY = 5  # Delay in seconds before retrying the login
+
     def __init__(self) -> None:
-        pass
-
-    def run(self):
-        self.mt5 = self.attempt_login()
+        logging.basicConfig(level=logging.INFO) 
+        self.mt5 = mt5
         
-    def get_mt5(self):
-        return self.mt5
+    def attempt_login(self) -> bool:
+        """Attempts to log in to the MT5 account with retry logic."""
+        for attempt in range(1, self.MAX_LOGIN_ATTEMPTS + 1):
+            if self.login():
+                logging.info(f"Connected to account #{credentials.ACCOUNT_ID}")
+                return True
+            else:
+                error_code = self.mt5.last_error()
+                logging.error(f"Login attempt {attempt} failed for account #{credentials.ACCOUNT_ID}, error code: {error_code}")
+                
+                if attempt < self.MAX_LOGIN_ATTEMPTS:
+                    logging.info(f"Retrying login in {self.RETRY_DELAY} seconds...")
+                    time.sleep(self.RETRY_DELAY)
+                else:
+                    logging.error(f"Max login attempts reached. Unable to connect to account #{credentials.ACCOUNT_ID}.")
+                    return False
+        
+        return False
+    
+    def login(self) -> bool:
+        """Logs in to the MetaTrader 5 account."""
+        if not self.mt5.initialize(path=defs.METATRADER_PATH):
+            logging.error(f"Failed to initialize MetaTrader 5, error: {self.mt5.last_error()}")
+            return False
 
-    def attempt_login(self):
-        authorized=mt5.login(account=credentials.ACCOUNT_ID,
+        authorized = self.mt5.login(
+            credentials.ACCOUNT_ID,
             password=credentials.ACCOUNT_PASSWORD,
-            server=credentials.ACCOUNT_SERVER)  # the terminal database password is applied if connection data is set to be remembered
-        if authorized:
-            print("connected to account #{}".format(credentials.ACCOUNT_ID))
-        else:
-            print("failed to connect at account #{}, error code: {}".format(credentials.ACCOUNT_ID, mt5.last_error()))
-            print("retrying login attempt")
-            
-            if mt5.initialize(
-                path=defs.METATRADER_PATH,
-                login=credentials.ACCOUNT_ID,
-                password=credentials.ACCOUNT_PASSWORD,
-                server=credentials.ACCOUNT_SERVER,
-            ):
-                print("connection established")
-            
-        return mt5
+            server=credentials.ACCOUNT_SERVER
+        )
         
+        if authorized:
+            return True
+        else:
+            logging.error(f"Login failed for account #{credentials.ACCOUNT_ID}, error code: {self.mt5.last_error()}")
+            return False
 
     def configure_df(self, hist_data):
         hist_data_df = pd.DataFrame(hist_data)
@@ -91,6 +106,8 @@ class MT5:
                 "type_time": self.mt5.ORDER_TIME_GTC,
                 "comment": f"{comment}",
             }
+            
+            print(f"palce_order: {request}")
 
             # Send the order to MT5
             order_result = self.mt5.order_send(request)
@@ -117,7 +134,7 @@ class MT5:
                 f"metatrader_api.place_order(): Error placing order symbol: {error}"
             )
 
-            return None
+            raise error
 
     # Function to convert a timeframe string in MetaTrader 5 friendly format
     def set_query_timeframe(self, timeframe):
@@ -198,30 +215,32 @@ class MT5:
 
     def fetch_candles(
         self,
-        symbol,
-        log_to_error,
-        count=100,
-        mt5_timeframe="M30",
-    ):
+        symbol: str,
+        mt5_timeframe: str,
+        log_to_error: callable,
+        count: int = 200,
+    ) -> pd.DataFrame:
         try:
+            # Set the correct timeframe for MT5 query
             mt5_timeframe = self.set_query_timeframe(mt5_timeframe)
             hist_data = self.mt5.copy_rates_from_pos(symbol, mt5_timeframe, 0, count)
+            if hist_data is None or len(hist_data) == 0:
+                raise ValueError(f"No data returned for {symbol} in {mt5_timeframe}")
+            
+            # Convert to DataFrame and configure it
             hist_data_df = self.configure_df(hist_data)
-
             return hist_data_df
         except Exception as error:
-            log_to_error(
-                f"Error: mt5.fetch_candles: Failed to fetch candles for {symbol}", 
-            )
-            log_to_error(error)
+            # Log detailed error message
+            log_to_error(f"Error: fetch_candles failed for {symbol} in {mt5_timeframe}. Error: {error}")
+            return pd.DataFrame()  # Return an empty DataFrame on failure
 
-            return pd.DataFrame()
 
     # Function to query previous candlestick data from MT5
-    def query_historic_data(self, symbol, number_of_candles):
+    def query_historic_data(self, symbol, number_of_candles, granularity):
         # Convert the timeframe into an MT5 friendly format
-        mt5_timeframe = mt5.TIMEFRAME_M5
-        # Retrieve data from MT5
+        mt5_timeframe = self.set_query_timeframe(granularity)
+             # Retrieve data from MT5
         rates = self.mt5.copy_rates_from_pos(
             symbol, mt5_timeframe, 0, number_of_candles
         )
