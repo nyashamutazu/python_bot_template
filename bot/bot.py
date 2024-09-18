@@ -6,6 +6,8 @@ from typing import Dict, List
 import datetime as dt 
 import threading
 import logging
+import google.cloud.logging
+from google.cloud.logging.handlers import CloudLoggingHandler
 
 from api.metatrader_api import MT5
 from bot.signal_management import process_signal
@@ -17,7 +19,7 @@ from bot.candle_manager import CandleManager
 from models.bot_config import BotConfig
 from models.error_handling import ErrorHandling
 from models.indicators import Indicators
-from models.logging import Logging
+from models.logging import CloudLogging, Logging, LoggingConfig
 from models.risk_management import RiskManagement
 from models.individual_strategy import IndividualStrategy
 from models.signal_decision import SignalDecision
@@ -61,9 +63,25 @@ class Bot:
             self.error_handling = ErrorHandling(**data["error_handling"])
             
             self.logging: Dict[str, Logging] = {}
-            for logging_name, logging_config in data["logging"].items():
+            for logging_name, logging_config in data["logging"]["directories"].items():
                 self.logging[logging_name] = Logging(**logging_config)
                 
+            error_log = Logging(name=data["logging"]["directories"]["error"]["name"],
+                         log_file_path=data["logging"]["directories"]["error"]["log_file_path"])
+
+            main_log = Logging(name=data["logging"]["directories"]["main"]["name"],
+                                    log_file_path=data["logging"]["directories"]["main"]["log_file_path"])
+
+            cloud_logging = CloudLogging(enabled=data["logging"]["cloud_logging"]["enabled"])
+
+            self.logging_config = LoggingConfig(
+                directories={
+                    "error": error_log,
+                    "main": main_log
+                },
+                cloud_logging=cloud_logging
+            )
+
             self.trade_management = TradeManagement(**data["trade_management"])
             self.signal_management = SignalManagement(**data["signal_management"])
             
@@ -99,7 +117,7 @@ class Bot:
                 start_time=data["start_time"],
                 end_time=data["end_time"],
                 sleep_time=data["sleep_time"],
-                logging=self.logging,
+                logging_config=self.logging_config,
                 error_handling=self.error_handling,
                 trade_management=self.trade_management,
                 signal_management=self.signal_management
@@ -111,24 +129,27 @@ class Bot:
             )
 
     def setup_logs(self):
+        cloud_logging_enabled = self.logging_config.cloud_logging.enabled
         self.logs: Dict[str, LogWrapper] = {}
         
+       # Create log wrappers for all symbols and components
         for symbol in self.trading_symbols.keys():
-            self.logs[symbol] = LogWrapper(symbol)
+            self.logs[symbol] = LogWrapper(symbol, cloud_logging_enabled=cloud_logging_enabled)
             for symbol_candle in self.trading_symbols[symbol]:
                 self.log_message(f"{symbol_candle}", symbol)
         
-        for logging_name, loging_attributes in self.logging.items():
-            _name = loging_attributes.name
-            self.logs[_name] = LogWrapper(_name)
-            
+        for logging_name, logging_attributes in self.logging.items():
+            _name = logging_attributes.name
+            self.logs[_name] = LogWrapper(_name, cloud_logging_enabled=cloud_logging_enabled)
+        
+        # Specific log for trade processor, if applicable
         if self.bot_config.signal_management.trade_processor:
-            self.logs["trade_processor"] = LogWrapper("trade_processor")
+            self.logs["trade_processor"] = LogWrapper("trade_processor", cloud_logging_enabled=cloud_logging_enabled)
         
         self.log_to_main(
             f"Bot started with {StrategyConfiguration.settings_to_str(self.strategy_configuration)}"
         )
-        
+            
     def set_bot_configuration(self):
         self.is_running = True
         self.lock = threading.Lock()
@@ -138,7 +159,10 @@ class Bot:
         self.current_signals = Queue()
 
     def log_message(self, msg, key):
-        self.logs[key].logger.debug(msg)
+        if key in self.logs:
+            self.logs[key].logger.debug(msg)
+        else:
+            logging.getLogger(key).debug(msg)
 
     def log_to_main(self, msg):
         self.log_message(msg, 'main')
@@ -279,10 +303,6 @@ class Bot:
         self.log_to_main("stop: Gracefully stop the threads")
         
         # self.trade_manager.close_open_trades()
-
-        # for thread in threading.enumerate():
-        #     if thread != threading.main_thread():
-        #         thread.join()
                 
         self.is_running = False
         
