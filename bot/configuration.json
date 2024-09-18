@@ -19,13 +19,18 @@
     "logging_name": "error"
   },
   "logging": {
-    "error": {
-      "name": "error",
-      "log_file_path": "/log"
+    "directories": {
+      "error": {
+        "name": "error",
+        "log_file_path": "/log"
+      },
+      "main": {
+        "name": "main",
+        "log_file_path": "/log"
+      }
     },
-    "main": {
-      "name": "main",
-      "log_file_path": "/log"
+    "cloud_logging": {
+      "enabled": false
     }
   },
   "signal_management": {
