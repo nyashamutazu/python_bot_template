@@ -28,13 +28,19 @@ This respository contains python files for a free MetaTrader5(MT5) trading bot. 
 3. Optionally install TA-Lib for pandas_ta
 `pip install TA-Lib`
 4. If attempted installing TA-Lib but failed download [Anaconda](https://www.anaconda.com/)
+5. Create `.env` file further guide can be found in `./bot/README.md` file
 
 ## Update bot credetials
 1. Connect your broker, for example, [vantage](https://secure.vantagemarkets.com/login) and create an account 
 2. Update `./constants/credentials.py` file 
 
-## Update bot settings
-1. Bot settings can be updated in `./bot/settings.json`
+## Update bot configurations (Optional)
+1. Bot settings can be updated in `./bot/configuration.json`
+2. Further details in the `./bot/README.md`
+
+## Update bot CI/CD (Optional)
+1. Bot CI/CD can be updated in `./bot/cloudbuild.yml`
+2. Further details in the `./infrastructure/README.md`
 
 ## Deploy strategy
 1. Follow instructions `./strategy/README.md` to deploy strategy

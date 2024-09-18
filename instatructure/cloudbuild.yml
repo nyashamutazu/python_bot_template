@@ -1,0 +1,35 @@
+steps:
+- name: 'hashicorp/terraform:light'
+  entrypoint: 'sh'
+  args:
+    - '-c'
+    - |
+      cd infra
+      terraform init
+      terraform apply -auto-approve
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo "Copying bot code to VM"
+      gcloud compute scp --recurse ./path/to/bot/* trading-bot-vm:/path/to/deployment --zone=YOUR_ZONE
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo "Setting up Python environment on the VM"
+      gcloud compute ssh trading-bot-vm --zone=YOUR_ZONE --command "cd /path/to/deployment && pip install -r requirements.txt && python pre_check.py"
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      echo "Starting the trading bot"
+      gcloud compute ssh trading-bot-vm --zone=YOUR_ZONE --command "cd /path/to/deployment && python main.py"
+
+
